@@ -2,19 +2,32 @@ require 'sinatra'
 require 'nokogiri'
 require 'sinatra/reloader'
 
+require 'open-uri'
+
 require 'erb'
 
 set :bind, '0.0.0.0'
 set :port, 9292
 
+source = ARGV[0]
+raise "No source specified!" unless source
+
+unless source.start_with?("http://") || source.start_with?("https://")
+  source = File.join(__dir__, source)
+
+  raise "File does not exist!" unless File.exists?(source)
+end
+
 get '/status' do
-  @statuses = read_xml(File.read('monit_status.xml'))
+  @statuses = read_xml(source)
 
   renderer = ERB.new(template)
   renderer.result(binding)
 end
 
-def read_xml(xml)
+def read_xml(source)
+  xml = open(source).read
+
   @doc = Nokogiri::XML(xml)
 
   @doc.xpath('//service').map do |service_element|
