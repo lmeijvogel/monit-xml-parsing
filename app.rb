@@ -42,6 +42,7 @@ def template
   <<-TEMPLATE
     <html>
       <head>
+      <meta http-equiv="refresh" content="60" />
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
       <style>
         .server-line {
