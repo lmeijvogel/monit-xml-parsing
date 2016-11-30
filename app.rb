@@ -21,7 +21,7 @@ unless is_http?(source)
   raise "File does not exist!" unless File.exists?(source)
 end
 
-get '/status' do
+get '/' do
   @statuses = read_xml(source)
 
   renderer = ERB.new(template)
