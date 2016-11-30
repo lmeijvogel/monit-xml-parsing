@@ -24,7 +24,14 @@ end
 get '/' do
   @statuses = read_xml(source)
 
-  renderer = ERB.new(template)
+  renderer = ERB.new(root_template)
+  renderer.result(binding)
+end
+
+get '/status' do
+  @statuses = read_xml(source)
+
+  renderer = ERB.new(status_template)
   renderer.result(binding)
 end
 
@@ -57,11 +64,10 @@ def get_from_http(source)
 
   res.body
 end
-def template
+def root_template
   <<-TEMPLATE
     <html>
       <head>
-      <meta http-equiv="refresh" content="60" />
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
       <style>
         body {
@@ -82,14 +88,75 @@ def template
           font-size: 20pt;
         }
       </style>
+
+      <script>
+        function doRequest() {
+          getJson('/status', {
+            success: function (data) {
+              document.querySelector('.server-list').innerHTML = data;
+            },
+
+            error: function (data) {
+              var serverLines = document.querySelectorAll('.server-button');
+
+              if (serverLines) {
+                serverLines.forEach( function (line) {
+                  line.innerHTML = "?";
+                  line.className = "server-button btn btn-warning";
+                });
+              } else {
+                document.querySelector('.server-list').innerHTML = '<button class="btn btn-warning">ERROR</button>';
+              }
+            }
+          });
+        }
+
+        function getJson(uri, options) {
+          var request = new window.XMLHttpRequest();
+
+          request.open('GET', uri, true);
+
+          request.onload = function () {
+            if (request.status >= 200 && request.status < 400) {
+              if (options.success) {
+                options.success(request.responseText);
+              }
+            } else {
+              if (options.error) {
+                options.error(data);
+              }
+            }
+          };
+
+          request.onerror = function () {
+            if (options.error) {
+              options.error();
+            }
+          };
+
+          request.send();
+        }
+      </script>
+    </head>
     <body>
-      <div class="server-list">
-        <% @statuses.each do |status|
-          button_class = status[:up] ? 'btn-success' : 'btn-danger' %>
-          <p class="server-line"><button class="server-button btn btn-sm <%= button_class %>"><%= status[:name] %></button></p>
-        <% end %>
-      </div>
+      <div class="server-list"></div>
     </body>
+    <script>
+      doRequest();
+
+      setInterval(function () {
+        doRequest();
+      }, 30000);
+    </script>
   </html>
+  TEMPLATE
+end
+
+def status_template
+  <<-TEMPLATE
+      <% @statuses.each do |status|
+        button_class = status[:up] ? 'btn-success' : 'btn-danger' %>
+        <p class="server-line"><button class="server-button btn <%= button_class %>"><%= status[:name] %></button></p>
+      <% end %>
   TEMPLATE
 end
