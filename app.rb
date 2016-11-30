@@ -64,8 +64,12 @@ def template
       <meta http-equiv="refresh" content="60" />
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
       <style>
+        body {
+          background-color: black;
+        }
+
         .server-line {
-          margin: 3px 10;
+          margin-top: 5px;
         }
 
         .server-button {
