@@ -74,12 +74,13 @@ def template
 
         .server-button {
           width: 300px;
+          font-size: 20pt;
         }
       </style>
     <body>
       <% @statuses.each do |status|
         button_class = status[:up] ? 'btn-success' : 'btn-danger' %>
-        <p class="server-line"><button class="server-button btn <%= button_class %>"><%= status[:name] %></button></p>
+        <p class="server-line"><button class="server-button btn btn-lg <%= button_class %>"><%= status[:name] %></button></p>
       <% end %>
     </body>
   </html>
