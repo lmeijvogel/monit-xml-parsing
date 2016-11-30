@@ -2,9 +2,8 @@ require 'sinatra'
 require 'nokogiri'
 require 'sinatra/reloader'
 
-require 'open-uri'
-
 require 'erb'
+require 'net/http'
 
 set :bind, '0.0.0.0'
 set :port, 9292
@@ -12,7 +11,11 @@ set :port, 9292
 source = ARGV[0]
 raise "No source specified!" unless source
 
-unless source.start_with?("http://") || source.start_with?("https://")
+def is_http?(source)
+  source.start_with?("http://") || source.start_with?("https://")
+end
+
+unless is_http?(source)
   source = File.join(__dir__, source)
 
   raise "File does not exist!" unless File.exists?(source)
@@ -26,7 +29,11 @@ get '/status' do
 end
 
 def read_xml(source)
-  xml = open(source).read
+  xml = if is_http?(source)
+    get_from_http(source)
+  else
+    File.read(source)
+  end
 
   @doc = Nokogiri::XML(xml)
 
@@ -38,6 +45,18 @@ def read_xml(source)
   end
 end
 
+def get_from_http(source)
+  uri = URI(source)
+
+  req = Net::HTTP::Get.new(uri)
+  req.basic_auth(*uri.userinfo.split(':')) if uri.userinfo
+
+  res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+    http.request(req)
+  end
+
+  res.body
+end
 def template
   <<-TEMPLATE
     <html>
