@@ -68,8 +68,13 @@ def template
           background-color: black;
         }
 
-        .server-line {
+        .server-list {
           margin-top: 5px;
+        }
+
+        .server-line {
+          margin-top: 1px;
+          margin-bottom: 0px;
         }
 
         .server-button {
@@ -78,10 +83,12 @@ def template
         }
       </style>
     <body>
-      <% @statuses.each do |status|
-        button_class = status[:up] ? 'btn-success' : 'btn-danger' %>
-        <p class="server-line"><button class="server-button btn btn-sm <%= button_class %>"><%= status[:name] %></button></p>
-      <% end %>
+      <div class="server-list">
+        <% @statuses.each do |status|
+          button_class = status[:up] ? 'btn-success' : 'btn-danger' %>
+          <p class="server-line"><button class="server-button btn btn-sm <%= button_class %>"><%= status[:name] %></button></p>
+        <% end %>
+      </div>
     </body>
   </html>
   TEMPLATE
