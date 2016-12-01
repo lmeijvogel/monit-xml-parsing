@@ -87,6 +87,10 @@ def root_template
           width: 300px;
           font-size: 20pt;
         }
+
+        .server-button.blink-on {
+          color: #d9534f;
+        }
       </style>
 
       <script>
@@ -136,6 +140,28 @@ def root_template
 
           request.send();
         }
+
+        function animateUnavailableServers() {
+          var blinkOn = false;
+
+          setInterval(function () {
+            if (blinkOn) {
+              var buttons = document.querySelectorAll(".btn");
+
+              buttons.forEach(function (button) {
+                button.className = button.className.replace("blink-on", "");
+              });
+            } else {
+              var unavailableButtons = document.querySelectorAll(".btn-danger");
+
+              unavailableButtons.forEach(function (button) {
+                button.className = button.className + " blink-on";
+              });
+            }
+
+            blinkOn = !blinkOn;
+          }, 1000);
+        }
       </script>
     </head>
     <body>
@@ -147,6 +173,8 @@ def root_template
       setInterval(function () {
         doRequest();
       }, 30000);
+
+      animateUnavailableServers();
     </script>
   </html>
   TEMPLATE
