@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     backports (3.6.8)
+    dotenv (2.1.1)
     mini_portile2 (2.1.0)
     multi_json (1.12.1)
     nokogiri (1.6.8.1)
@@ -28,6 +29,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  dotenv
   nokogiri
   sinatra
   sinatra-contrib
