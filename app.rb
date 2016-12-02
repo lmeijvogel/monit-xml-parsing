@@ -12,46 +12,47 @@ Dotenv.load
 set :bind, '0.0.0.0'
 set :port, 9292
 
-source = ARGV[0]
-raise "No source specified!" unless source
-
-def is_http?(source)
-  source.start_with?("http://") || source.start_with?("https://")
+def monit_source
+  ENV.fetch("MONIT_XML_URL")
 end
 
-unless is_http?(source)
-  source = File.join(__dir__, source)
+def is_http?
+  monit_source.start_with?("http://") || monit_source.start_with?("https://")
+end
 
-  raise "File does not exist!" unless File.exists?(source)
+unless is_http?
+  monit_source = File.join(__dir__, monit_source)
+
+  raise "File does not exist!" unless File.exists?(monit_source)
 end
 
 get '/' do
   @build_display_url = ENV.fetch("BUILD_DISPLAY_URL")
-  @monit_status_container_url = ENV.fetch("MONIT_STATUS_CONTAINER_URL")
+  @monit_status_display_container_url = ENV.fetch("MONIT_STATUS_DISPLAY_CONTAINER_URL")
 
   renderer = ERB.new(root_template)
   renderer.result(binding)
 end
 
 get '/monit' do
-  @monit_status_url = ENV.fetch("MONIT_STATUS_URL")
+  @monit_status_display_url = ENV.fetch("MONIT_STATUS_DISPLAY_URL")
 
   renderer = ERB.new(monit_template)
   renderer.result(binding)
 end
 
 get '/monit_status' do
-  @statuses = read_xml(source)
+  @statuses = read_xml
 
   renderer = ERB.new(monit_status_template)
   renderer.result(binding)
 end
 
-def read_xml(source)
-  xml = if is_http?(source)
-    get_from_http(source)
+def read_xml
+  xml = if is_http?
+    get_from_http
   else
-    File.read(source)
+    File.read
   end
 
   @doc = Nokogiri::XML(xml)
@@ -64,8 +65,8 @@ def read_xml(source)
   end
 end
 
-def get_from_http(source)
-  uri = URI(source)
+def get_from_http
+  uri = URI(monit_source)
 
   req = Net::HTTP::Get.new(uri)
   req.basic_auth(*uri.userinfo.split(':')) if uri.userinfo
@@ -104,7 +105,7 @@ def root_template
       </head>
       <body>
         <iframe class="builds" src="<%= @build_display_url %>"></iframe>
-        <iframe class="servers" src="<%= @monit_status_container_url %>"></iframe>
+        <iframe class="servers" src="<%= @monit_status_display_container_url %>"></iframe>
         <!-- iframe class="servers" src="http://10.0.4.91:9292"></iframe -->
       </body>
     </html>
@@ -142,7 +143,7 @@ def monit_template
 
         <script>
           function doRequest() {
-            getJson('<%= @monit_status_url %>', {
+            getJson('<%= @monit_status_display_url %>', {
               success: function (data) {
                 document.querySelector('.server-list').innerHTML = data;
               },
