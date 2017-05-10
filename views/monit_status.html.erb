@@ -1,0 +1,4 @@
+<% @statuses.each do |status|
+  button_class = status[:up] ? 'btn-success' : 'btn-danger' %>
+  <p class="server-line"><button class="server-button btn <%= button_class %>"><%= status[:name] %></button></p>
+<% end %>

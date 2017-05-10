@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <style>
+      html, body {
+        height: 100%;
+        background-color: black;
+        overflow-y: hidden;
+        overflow-x: hidden;
+      }
+      iframe {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+      .builds {
+        width: calc(100% - 320px);
+      }
+      .servers {
+        width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe class="builds" src="<%= @build_display_url %>"></iframe>
+    <iframe class="servers" src="<%= @monit_status_display_container_url %>"></iframe>
+  </body>
+</html>
