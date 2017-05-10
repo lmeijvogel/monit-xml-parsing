@@ -1,11 +1,15 @@
 require 'sinatra'
 require 'nokogiri'
 require 'sinatra/reloader'
+require 'json'
 
 require 'dotenv'
 
 require 'erb'
 require 'net/http'
+require 'httparty'
+
+require_relative 'jenkins_adapter'
 
 Dotenv.load
 
@@ -21,48 +25,48 @@ def is_http?
 end
 
 unless is_http?
-  monit_source = File.join(__dir__, monit_source)
+  monit_source_file = File.join(__dir__, monit_source)
 
-  raise "File does not exist!" unless File.exists?(monit_source)
+  raise "File does not exist!" unless File.exists?(monit_source_file)
 end
 
 get '/' do
-  @build_display_url = ENV.fetch("BUILD_DISPLAY_URL")
-  @monit_status_display_container_url = ENV.fetch("MONIT_STATUS_DISPLAY_CONTAINER_URL")
-
   renderer = ERB.new(File.read('views/index.html.erb'))
   renderer.result(binding)
 end
 
-get '/monit' do
-  @monit_status_display_url = ENV.fetch("MONIT_STATUS_DISPLAY_URL")
-
-  renderer = ERB.new(File.read('views/monit_status_loader.html.erb'))
-  renderer.result(binding)
+get '/jenkins_status' do
+  read_jenkins_status
 end
 
 get '/monit_status' do
-  @statuses = read_xml
-
-  renderer = ERB.new(File.read('views/monit_status.html.erb'))
-  renderer.result(binding)
+  read_monit_xml
 end
 
-def read_xml
+def read_monit_xml
   xml = if is_http?
     get_from_http
   else
-    File.read
+    monit_source_file = File.join(__dir__, monit_source)
+
+    File.read(monit_source_file)
   end
 
   @doc = Nokogiri::XML(xml)
 
   @doc.xpath('//service').map do |service_element|
+    status = service_element.xpath('status').text == '0' ? 'success' : 'error'
     {
       name: service_element.xpath('name').text,
-      up: service_element.xpath('status').text == '0'
+      status: status
     }
-  end
+  end.to_json
+end
+
+def read_jenkins_status
+  jenkins_adapter = JenkinsAdapter.new(ENV.fetch("JENKINS_USER"), ENV.fetch("JENKINS_TOKEN"))
+
+  jenkins_adapter.all_builds.to_json
 end
 
 def get_from_http

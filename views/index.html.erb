@@ -1,28 +1,37 @@
 <html>
   <head>
-    <style>
-      html, body {
-        height: 100%;
-        background-color: black;
-        overflow-y: hidden;
-        overflow-x: hidden;
-      }
-      iframe {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        border: 0;
-      }
-      .builds {
-        width: calc(100% - 320px);
-      }
-      .servers {
-        width: 300px;
-      }
-    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
+    <link rel="stylesheet" media="all" href="style.css" />
+
+    <script src="status_loader.js"></script>
   </head>
+
   <body>
-    <iframe class="builds" src="<%= @build_display_url %>"></iframe>
-    <iframe class="servers" src="<%= @monit_status_display_container_url %>"></iframe>
+    <div class="builds">
+      <div class="build-list"></div>
+    </div>
+
+    <div class="servers">
+      <div class="server-list"></div>
+    </div>
   </body>
+  <script>
+    var serversContainer = document.querySelector('.server-list');
+    var buildsContainer = document.querySelector('.build-list');
+
+    var monitStatusLoader = new StatusLoader('/monit_status', serversContainer, 'server-button');
+    var jenkinsStatusLoader = new StatusLoader('/jenkins_status', buildsContainer, 'build-button');
+
+    monitStatusLoader.doRequest();
+    jenkinsStatusLoader.doRequest();
+
+    setInterval(function () {
+      jenkinsStatusLoader.doRequest();
+      monitStatusLoader.doRequest();
+    }, 3000);
+
+    jenkinsStatusLoader.animateUnavailableServers();
+    monitStatusLoader.animateUnavailableServers();
+  </script>
+
 </html>

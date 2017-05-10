@@ -2,9 +2,13 @@ GEM
   remote: https://rubygems.org/
   specs:
     backports (3.6.8)
+    byebug (9.0.6)
     dotenv (2.1.1)
+    httparty (0.14.0)
+      multi_xml (>= 0.5.2)
     mini_portile2 (2.1.0)
     multi_json (1.12.1)
+    multi_xml (0.6.0)
     nokogiri (1.6.8.1)
       mini_portile2 (~> 2.1.0)
     rack (1.6.5)
@@ -29,10 +33,12 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  byebug
   dotenv
+  httparty
   nokogiri
   sinatra
   sinatra-contrib
 
 BUNDLED WITH
-   1.12.5
+   1.14.5

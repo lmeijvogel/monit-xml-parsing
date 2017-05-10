@@ -1,44 +1,8 @@
 <html>
 <head>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
-  <style>
-    body {
-      background-color: black;
-    }
-
-    .server-list {
-      margin-top: 5px;
-    }
-
-    .server-line {
-      margin-top: 1px;
-      margin-bottom: 0px;
-    }
-
-    .server-button {
-      width: 300px;
-      font-size: 20pt;
-    }
-
-    .server-button.blink-on {
-      color: #d9534f;
-    }
-  </style>
-
-  <script src="status_loader.js">
-</head>
 <body>
   <div class="server-list"></div>
 </body>
 
 <script>
-  var url = '<%= @monit_status_display_url %>';
-  doRequest(url);
-
-  setInterval(function () {
-    doRequest(url);
-  }, 30000);
-
-  animateUnavailableServers();
-</script>
 </html>
