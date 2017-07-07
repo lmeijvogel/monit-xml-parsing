@@ -1,4 +1,4 @@
-class Job < Struct.new(:name, :color)
+class Job < Struct.new(:name, :color, :percentage)
   def status
     case color
     when "blue"

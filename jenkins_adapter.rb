@@ -33,13 +33,38 @@ class JenkinsAdapter
     response = authenticated_request(frontend_uri)
 
     jobs = response['jobs'].map do |job|
-      Job.new(job["name"], job["color"])
+      percentage = if job['color'] =~ /_anime$/
+                     get_build_percentage(job)
+                   else
+                     0
+                   end
+
+      Job.new(job['name'], job['color'], percentage)
     end
 
     jobs
   end
 
   private
+
+  def get_build_percentage(job)
+    job_url = "#{job['url']}/api/json"
+    job_data = authenticated_request(job_url)
+
+    current_build_url = "#{job_data['builds'].first['url']}/api/json"
+
+    build_data = authenticated_request(current_build_url)
+
+    build_timestamp_in_ms = build_data['timestamp']
+    build_start_time = Time.at(build_timestamp_in_ms / 1000)
+
+    current_duration = (Time.now - build_start_time)
+    estimated_duration = (build_data['estimatedDuration'] / 1000)
+
+    percentage = (current_duration / estimated_duration) * 100
+
+    percentage.round
+  end
 
   def authenticated_request(uri)
     response = HTTParty.get(uri, basic_auth: {

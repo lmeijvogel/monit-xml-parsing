@@ -2,19 +2,24 @@ function StatusLoader(url, container, buttonClass) {
   function doRequest() {
     getJson(url, {
       success: function (data) {
+        var errorButtons = container.querySelectorAll('.error-button');
+
+        errorButtons.forEach( function (button) {
+          container.removeChild(button);
+        });
         createOrUpdateButtons(data);
       },
 
       error: function (data) {
         var serverLines = container.querySelectorAll('.server-button');
 
-        if (serverLines) {
+        if (serverLines.length) {
           serverLines.forEach( function (line) {
             line.innerHTML = "?";
             line.className = buttonClass + " button btn btn-warning";
           });
         } else {
-          container.innerHTML = '<button class="btn btn-warning">ERROR</button>';
+          container.innerHTML = '<button class="btn btn-warning error-button">ERROR</button>';
         }
       }
     });
@@ -32,7 +37,7 @@ function StatusLoader(url, container, buttonClass) {
         }
       } else {
         if (options.error) {
-          options.error(data);
+          options.error(request.responseText);
         }
       }
     };
