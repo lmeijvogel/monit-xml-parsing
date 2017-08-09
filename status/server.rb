@@ -1,7 +1,6 @@
 require_relative 'from_json'
 require_relative 'service'
 require_relative 'led_color'
-require 'pry'
 
 class Server < FromJson
 
@@ -28,7 +27,7 @@ class Server < FromJson
 
   def services
     @services ||=  Array(data.dig('services')).map do |service|
-      Service.from_json(service)
+      Service.new(data: service)
     end
   end
 

@@ -35,7 +35,7 @@ class Service < FromJson
 
   def statistics
     @statistics ||=  Array(data.dig('statistics')).map do |statistic|
-      Statistic.from_json(statistic)
+      Statistic.new(data: statistic)
     end
   end
 
