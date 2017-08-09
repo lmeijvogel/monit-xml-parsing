@@ -4,7 +4,7 @@ gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'nokogiri'
 gem 'dotenv'
-
+gem 'mmonit', :git => 'git@github.com:sep/mmonit-ruby.git'
 gem 'httparty'
 
 group :development do
