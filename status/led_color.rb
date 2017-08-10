@@ -1,17 +1,17 @@
 module LEDColor
 
   COLORS = {
-      0 => "#FF0000",
-      1 => "#FFA500",
-      2 => "#008000",
-      3 => "#808080"
+      error: "#FF0000",
+      warning: "#FFA500",
+      ok: "#008000",
+      disabled: "#808080"
   }
 
   def self.hex(id)
     if COLORS.include?(id)
       COLORS[id]
     else
-      COLORS[3]
+      COLORS[:disabled]
     end
   end
 

@@ -14,4 +14,8 @@ class FromJson
     data['id']
   end
 
+  def name
+    data['name']
+  end
+
 end

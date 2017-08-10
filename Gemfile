@@ -6,6 +6,8 @@ gem 'nokogiri'
 gem 'dotenv'
 gem 'mmonit', :git => 'git@github.com:sep/mmonit-ruby.git'
 gem 'httparty'
+gem 'rufus-scheduler'
+
 
 group :development do
   gem "byebug"

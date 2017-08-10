@@ -4,16 +4,13 @@ require_relative 'led_color'
 
 class Server < FromJson
 
-  def name
-    data['name']
-  end
-
   def led
     data['led']
   end
 
   def led_color
-    LEDColor.hex(led)
+    conversion_hash = { 1 => :error, 2 => :warning, 3 => :ok }
+    LEDColor.hex(conversion_hash.include?(led) ? conversion_hash[led] : :disabled)
   end
 
   def status
@@ -26,7 +23,7 @@ class Server < FromJson
   end
 
   def services
-    @services ||=  Array(data.dig('services')).map do |service|
+    @services ||=  Array(data['services']).map do |service|
       Service.new(data: service)
     end
   end

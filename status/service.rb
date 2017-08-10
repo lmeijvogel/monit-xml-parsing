@@ -1,10 +1,7 @@
+require_relative 'from_json'
 require_relative 'statistic'
 
 class Service < FromJson
-
-  def name
-    data['name']
-  end
 
   def type
     data['type']

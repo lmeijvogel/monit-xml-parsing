@@ -1,4 +1,3 @@
-require 'sinatra'
 require 'nokogiri'
 require 'sinatra/reloader'
 require 'sinatra/base'
@@ -9,17 +8,14 @@ require 'dotenv'
 require 'erb'
 require 'net/http'
 require 'httparty'
+require 'rufus-scheduler'
 
 require_relative 'jenkins_adapter'
 require_relative 'm_monit_adapter'
 
 Dotenv.load
 
-
-class MyApp < Sinatra::Base
-
-  set :bind, '0.0.0.0'
-  set :port, 9292
+class App < Sinatra::Base
 
   get '/' do
     renderer = ERB.new(File.read('views/index.html.erb'))
@@ -41,42 +37,21 @@ class MyApp < Sinatra::Base
   end
 
   def read_mmonit_status
-    unless @servers
-      load_servers
+    if App.servers
+      App.servers.map do |server|
+        status = server.ok? ? 'success' : 'error'
+        {
+            name: server.name,
+            status: status
+        }
+      end
+    else
+      []
     end
-
-    @servers.map do |server|
-      status = server.ok? ? 'success' : 'error'
-      {
-          name: server.name,
-          status: status
-      }
-    end
-  end
-
-  def load_servers
-    mmonit_adapter = MMonitAdapter.new(ENV.fetch('MMONIT_USERNAME'), ENV.fetch('MMONIT_PASSWORD'),
-                                       ENV.fetch('MMONIT_HOST'), ENV.fetch('MMONIT_PORT')
-    )
-    @servers = mmonit_adapter.load
-  end
-
-  def monit_source
-    ENV.fetch("MONIT_XML_URL")
-  end
-
-  def is_http?
-    monit_source.start_with?("http://") || monit_source.start_with?("https://")
   end
 
   def read_monit_xml
-    xml = if is_http?
-            get_from_http
-          else
-            monit_source_file = File.join(__dir__, monit_source)
-
-            File.read(monit_source_file)
-          end
+    xml = get_from_http
 
     @doc = Nokogiri::XML(xml)
 
@@ -87,6 +62,12 @@ class MyApp < Sinatra::Base
           status: status
       }
     end
+  end
+
+  private
+
+  def monit_source
+    ENV.fetch("MONIT_XML_URL")
   end
 
   def get_from_http
@@ -100,6 +81,34 @@ class MyApp < Sinatra::Base
     end
 
     res.body
+  end
+
+
+  def self.scheduler
+    @scheduler ||= Rufus::Scheduler.new
+  end
+
+  def self.load_servers
+    mmonit_adapter = MMonitAdapter.new(ENV.fetch('MMONIT_USERNAME'), ENV.fetch('MMONIT_PASSWORD'),
+                                       ENV.fetch('MMONIT_HOST'), ENV.fetch('MMONIT_PORT')
+    )
+    mmonit_adapter.connect
+    @servers = mmonit_adapter.statuses
+    mmonit_adapter.disconnect
+  end
+
+  def self.servers
+    @servers
+  end
+
+  configure do
+    set :bind, '0.0.0.0'
+    set :port, 9292
+    set :scheduler, App.scheduler
+
+    settings.scheduler.every '5s', first: :now do
+      App.load_servers
+    end
   end
 
   run!

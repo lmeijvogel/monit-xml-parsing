@@ -1,3 +1,4 @@
+require_relative 'from_json'
 require_relative 'statistic_key'
 
 class Statistic < FromJson
