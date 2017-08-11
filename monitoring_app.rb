@@ -15,10 +15,15 @@ require_relative 'm_monit_adapter'
 
 Dotenv.load
 
-class App < Sinatra::Base
+class MonitoringApp < Sinatra::Base
 
   get '/' do
     renderer = ERB.new(File.read('views/index.html.erb'))
+    renderer.result(binding)
+  end
+
+  get '/beta' do
+    renderer = ERB.new(File.read('views/index2.html.erb'))
     renderer.result(binding)
   end
 
@@ -30,6 +35,10 @@ class App < Sinatra::Base
     (read_mmonit_status + read_monit_xml).to_json
   end
 
+  get '/status' do
+    read_status
+  end
+
   def read_jenkins_status
     jenkins_adapter = JenkinsAdapter.new(ENV.fetch("JENKINS_USER"), ENV.fetch("JENKINS_TOKEN"))
 
@@ -37,8 +46,9 @@ class App < Sinatra::Base
   end
 
   def read_mmonit_status
-    if App.servers
-      App.servers.map do |server|
+    servers = MonitoringApp.load_servers
+    if servers
+      servers.map do |server|
         status = server.ok? ? 'success' : 'error'
         {
             name: server.name,
@@ -64,6 +74,24 @@ class App < Sinatra::Base
     end
   end
 
+  def read_status
+    errors = {}
+    servers = MonitoringApp.load_servers
+    if servers
+      servers.each do |server|
+        unless server.ok?
+          errors[server.name] = { }
+          server.services.each do |service|
+            unless service.ok?
+              errors[server.name][service.name] = service.status
+            end
+          end
+        end
+      end
+    end
+    errors.to_json
+  end
+
   private
 
   def monit_source
@@ -83,34 +111,25 @@ class App < Sinatra::Base
     res.body
   end
 
-
-  def self.scheduler
-    @scheduler ||= Rufus::Scheduler.new
-  end
-
   def self.load_servers
     mmonit_adapter = MMonitAdapter.new(ENV.fetch('MMONIT_USERNAME'), ENV.fetch('MMONIT_PASSWORD'),
                                        ENV.fetch('MMONIT_HOST'), ENV.fetch('MMONIT_PORT')
     )
     mmonit_adapter.connect
-    @servers = mmonit_adapter.statuses
+    servers = mmonit_adapter.statuses
     mmonit_adapter.disconnect
-  end
 
-  def self.servers
-    @servers
+    servers
   end
 
   configure do
-    set :bind, '0.0.0.0'
-    set :port, 9292
-    set :scheduler, App.scheduler
-
-    settings.scheduler.every '5s', first: :now do
-      App.load_servers
+    if MonitoringApp.development?
+      set :bind, '0.0.0.0'
+      set :port, 9292
+      register Sinatra::Reloader
+      run!
     end
   end
 
-  run!
 end
 
