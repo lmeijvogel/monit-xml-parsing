@@ -1,0 +1,66 @@
+html, body {
+    height: 100%;
+    background-color: black;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.server-button,
+.build-button {
+    width: 290px;
+    font-size: 15pt;
+    margin: 3px;
+}
+
+.ticker {
+    margin-top: 20px;
+}
+
+
+.build-button.hidden,
+.server-button.hidden {
+    display: none;
+}
+
+
+/*.builds,*/
+/*.servers {*/
+/*display: inline-block;*/
+/*height: 100%;*/
+/*margin: 0;*/
+/*padding: 0;*/
+/*border: 0;*/
+/*}*/
+
+/*.servers {*/
+/*width: calc(100% - 320px);*/
+/*}*/
+
+/*.builds {*/
+/*width: 300px;*/
+/*}*/
+
+/*.build-list {*/
+/*margin-top: 5px;*/
+/*}*/
+
+/*.server-button,*/
+/*.build-button {*/
+/*width: 300px;*/
+/*font-size: 20pt;*/
+/*margin: 3px;*/
+/*}*/
+
+/*.build-button.blink-on {*/
+/*color: #d9534f;*/
+/*}*/
+
+/*.build-button.hidden,*/
+/*.server-button.hidden {*/
+/*display: none;*/
+/*}*/
+
+/*.success-count {*/
+/*color: white;*/
+/*font-size: 20px;*/
+/*}*/
